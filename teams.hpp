@@ -129,6 +129,16 @@ public:
 private:
     cxxpool::thread_pool pool;
 };
+
+class TeamAsync : public Team {
+public:
+    TeamAsync(uint32_t sizeArg, bool shareResults) : Team(1, shareResults) {} // ignore size
+
+    virtual ContestResult runContest(ContestInput const &contestInput);
+
+    virtual std::string getInnerName() { return "TeamAsync"; }
+};
+
 /*
 
 class TeamNewProcesses : public Team {
@@ -149,14 +159,7 @@ public:
     virtual std::string getInnerName() { return "TeamConstProcesses"; }
 };
 
-class TeamAsync : public Team {
-public:
-    TeamAsync(uint32_t sizeArg, bool shareResults) : Team(1, shareResults) {} // ignore size
 
-    virtual ContestResult runContest(ContestInput const &contestInput);
-
-    virtual std::string getInnerName() { return "TeamAsync"; }
-};
 */
 
 #endif

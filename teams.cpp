@@ -7,17 +7,21 @@
 #include "contest.hpp"
 
 namespace {
+
     uint64_t calcCollatzX(InfInt n, const std::shared_ptr<SharedResults> &shared) {
-        uint64_t count = 0;
         assert(n > 0);
+        uint64_t count = 0;
+        uint64_t result = 0;
+        InfInt n0 = n;
 
         while (n != 1) {
             uint64_t r;
             if (shared->get(n, r)) {
-                shared->put(n, count + r);
-                return count + r;
+                result = count + r;
+                break;
             }
 
+            ++result;
             ++count;
             if (n % 2 == 1) {
                 n *= 3;
@@ -27,20 +31,33 @@ namespace {
             }
         }
 
-        shared->put(n, count);
-        return count;
+     /*
+        n = n0;
+        uint64_t i = 0;
+        while (i < count) {
+            if (n % 2 == 1) {
+                n *= 3;
+                n += 1;
+            } else {
+                n /= 2;
+            }
+
+            ++i;
+            shared->put(n, result - i);
+        }*/
+
+        shared->put(n0, result);
+        return result;
     }
+
 }
 
-
 ContestResult TeamNewThreads::runContestImpl(ContestInput const &contestInput) {
-    ContestResult results;
-    results.resize(contestInput.size());
+    ContestResult results(contestInput.size());
 
     std::mutex m{};
     std::counting_semaphore sem{this->getSize()};
-    std::vector<std::thread> workers;
-    workers.resize(this->getSize());
+    std::vector<std::thread> workers(this->getSize());
 
     std::queue<int> unoccupied{};
     for (int i = 0; i < this->getSize(); ++i) {
@@ -67,7 +84,7 @@ ContestResult TeamNewThreads::runContestImpl(ContestInput const &contestInput) {
         workers.push_back(std::move(t));
     }
 
-    for (size_t j = 0; j < this->getSize(); ++j) {
+    for (size_t j = 0; j < workers.size(); ++j) {
         sem.acquire();
     }
     return results;
@@ -108,23 +125,21 @@ ContestResult TeamPool::runContest(ContestInput const &contestInput) {
     }
     return cxxpool::get(res.begin(), res.end());
 }
-/*
-
-ContestResult TeamNewProcesses::runContest(ContestInput const &contestInput) {
-    ContestResult r;
-    //TODO
-    return r;
-}
-
-ContestResult TeamConstProcesses::runContest(ContestInput const &contestInput) {
-    ContestResult r;
-    //TODO
-    return r;
-}
 
 ContestResult TeamAsync::runContest(ContestInput const &contestInput) {
     ContestResult r;
-    //TODO
+    r.resize(contestInput.size());
+    std::vector<std::future<void>> futures(contestInput.size());
+    for (int i = 0; i < contestInput.size(); ++i) {
+        futures[i] = std::async([&r, i, shared = this->getSharedResults(), &contestInput]() {
+            r[i] = shared
+                        ? calcCollatzX(contestInput[i], shared)
+                        : calcCollatz(contestInput[i]);
+        });
+    }
+
+    for (int i = 0; i < contestInput.size(); ++i) {
+        futures[i].get();
+    }
     return r;
 }
-*/

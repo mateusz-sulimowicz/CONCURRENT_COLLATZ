@@ -18,7 +18,6 @@ inline uint64_t calcCollatz(InfInt n) {
             n /= 2;
         }
     }
-
     return count;
 }
 

@@ -7,7 +7,7 @@ class SharedResults {
     struct write_lock {
     public:
         explicit write_lock(pthread_rwlock_t *lock) : lock(lock) {
-                pthread_rwlock_wrlock(lock);
+            pthread_rwlock_wrlock(lock);
         }
 
         ~write_lock() {
@@ -33,7 +33,6 @@ class SharedResults {
     };
 
 public:
-
     bool put(InfInt n, uint64_t result) {
         write_lock wrlock(&this->lock);
         if (results.contains(n)) {
@@ -48,7 +47,7 @@ public:
         if (!results.contains(n)) {
             return false;
         }
-        std::cout << "HURAAA!!" << "\n";
+
         result = results[n];
         return true;
     }
