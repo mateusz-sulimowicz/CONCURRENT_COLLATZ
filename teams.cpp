@@ -2,6 +2,7 @@
 #include <deque>
 #include <future>
 #include <thread>
+#include <iostream>
 #include <semaphore>
 #include "teams.hpp"
 #include "contest.hpp"
@@ -31,8 +32,8 @@ namespace {
             }
         }
 
-     /*
-        n = n0;
+     
+        /*n = n0;
         uint64_t i = 0;
         while (i < count) {
             if (n % 2 == 1) {
@@ -44,8 +45,9 @@ namespace {
 
             ++i;
             shared->put(n, result - i);
-        }*/
-
+        }
+	*/
+	
         shared->put(n0, result);
         return result;
     }
@@ -65,8 +67,8 @@ ContestResult TeamNewThreads::runContestImpl(ContestInput const &contestInput) {
     }
 
     for (int i = 0; i < contestInput.size(); ++i) {
-        sem.acquire();
-        std::lock_guard lock{m};
+	sem.acquire();
+	std::lock_guard lock{m};
         int id = unoccupied.front();
         unoccupied.pop();
 
@@ -81,11 +83,11 @@ ContestResult TeamNewThreads::runContestImpl(ContestInput const &contestInput) {
                     sem.release();
                 });
         t.detach();
-        workers.push_back(std::move(t));
+        workers[id] = std::move(t);
     }
 
     for (size_t j = 0; j < workers.size(); ++j) {
-        sem.acquire();
+  	sem.acquire();
     }
     return results;
 }
