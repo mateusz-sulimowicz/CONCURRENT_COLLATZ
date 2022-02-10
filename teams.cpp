@@ -135,7 +135,6 @@ ContestResult TeamPool::runContest(ContestInput const &contestInput) {
 ContestResult TeamAsync::runContest(ContestInput const &contestInput) {
     ContestResult r;
     r.resize(contestInput.size());
-    calcCollatzParallel(r, 1, contestInput, this->getSharedResults());
-
+    calcCollatzParallel(r, 1, contestInput, this->getSharedResults()).get();
     return r;
 }
