@@ -114,9 +114,7 @@ ContestResult TeamAsync::runContest(ContestInput const &contestInput) {
     std::vector<std::future<void>> futures(contestInput.size());
     for (int i = 0; i < contestInput.size(); ++i) {
         futures[i] = std::async([&r, i, shared = this->getSharedResults(), &contestInput]() {
-            r[i] = shared
-                   ? calcCollatzX(contestInput[i], shared)
-                   : calcCollatz(contestInput[i]);
+            r[i] = calcCollatz(contestInput[i], shared);
         });
     }
 
