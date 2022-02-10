@@ -38,30 +38,6 @@ namespace {
     uint64_t calcCollatz(InfInt n, const std::shared_ptr<SharedResults> &shared) {
         return shared ? calcCollatzX(n, shared) : calcCollatz(n);
     }
-
-    std::future<void> calcCollatzParallel(ContestResult &result, int id, const ContestInput &contestInput,
-                                          const std::shared_ptr<SharedResults> &shared) {
-        return std::async([&result, id, &shared, &contestInput]() {
-            std::future<void> f1, f2;
-
-            if (2 * id <= contestInput.size()) {
-                f1 = calcCollatzParallel(result, 2 * id, contestInput, shared);
-            }
-            if (2 * id + 1 <= contestInput.size()) {
-                f2 = calcCollatzParallel(result, 2 * id + 1, contestInput, shared);
-            }
-
-            result[id - 1] = calcCollatz(contestInput[id - 1], shared);
-
-            if (2 * id <= contestInput.size()) {
-                f1.get();
-            }
-            if (2 * id + 1 <= contestInput.size()) {
-                f2.get();
-            }
-        });
-    }
-
 }
 
 ContestResult TeamNewThreads::runContestImpl(ContestInput const &contestInput) {
@@ -135,6 +111,17 @@ ContestResult TeamPool::runContest(ContestInput const &contestInput) {
 ContestResult TeamAsync::runContest(ContestInput const &contestInput) {
     ContestResult r;
     r.resize(contestInput.size());
-    calcCollatzParallel(r, 1, contestInput, this->getSharedResults()).get();
+    std::vector<std::future<void>> futures(contestInput.size());
+    for (int i = 0; i < contestInput.size(); ++i) {
+        futures[i] = std::async([&r, i, shared = this->getSharedResults(), &contestInput]() {
+            r[i] = shared
+                   ? calcCollatzX(contestInput[i], shared)
+                   : calcCollatz(contestInput[i]);
+        });
+    }
+
+    for (int i = 0; i < contestInput.size(); ++i) {
+        futures[i].get();
+    }
     return r;
 }
