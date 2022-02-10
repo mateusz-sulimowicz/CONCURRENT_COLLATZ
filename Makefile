@@ -1,3 +1,3 @@
 all:
-	g++-11 -std=c++2a -pthread -o main main.cpp teams.cpp
-	g++-11 -std=c++2a -pthread -o new_process new_process.cpp
+	export LD_LIBRARY_PATH=/opt/gcc-11.2/lib64
+	/opt/gcc-11.2/bin/g++-11.2 -std=c++20 -pthread -o main main.cpp teams.cpp
